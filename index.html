@@ -65,6 +65,63 @@ body {
   }
 }
 
+/* Click hint overlay */
+.click-hint {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: pointer;
+  transition: opacity 0.5s ease;
+}
+
+.click-hint.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.click-hint-content {
+  text-align: center;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.click-hint-content .icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.click-hint-content .text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.8rem;
+  color: #ffd1e3;
+  text-shadow: 0 0 20px rgba(255, 182, 193, 0.6);
+}
+
+.click-hint-content .subtext {
+  font-size: 0.9rem;
+  color: rgba(255, 182, 193, 0.7);
+  margin-top: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(255, 182, 193, 0.4));
+  }
+  50% { 
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 40px rgba(255, 182, 193, 0.8));
+  }
+}
+
 /* Main container */
 .container {
   position: relative;
@@ -269,6 +326,14 @@ h1 {
   h1 {
     font-size: 2.5rem;
   }
+  
+  .click-hint-content .icon {
+    font-size: 3rem;
+  }
+  
+  .click-hint-content .text {
+    font-size: 1.4rem;
+  }
 }
 
 /* Completion message */
@@ -307,6 +372,15 @@ h1 {
 <body>
 
 <div class="bg-gradient"></div>
+
+<!-- Click hint overlay -->
+<div class="click-hint" id="clickHint">
+  <div class="click-hint-content">
+    <span class="icon">✨</span>
+    <div class="text">Click anywhere to begin</div>
+    <div class="subtext">Your surprise awaits</div>
+  </div>
+</div>
 
 <!-- Background Music (Playlist) -->
 <audio id="bgMusic" loop></audio>
@@ -465,13 +539,25 @@ music.addEventListener('ended', function() {
   music.play();
 });
 
-// Start playing
-loadTrack(currentTrack);
-music.play().catch(e => {
-  // If autoplay is blocked, play on first click
-  document.body.addEventListener('click', function() {
+// Click hint functionality
+const clickHint = document.getElementById('clickHint');
+let musicStarted = false;
+
+clickHint.addEventListener('click', function() {
+  if (!musicStarted) {
+    // Start music
+    loadTrack(currentTrack);
     music.play();
-  }, { once: true });
+    musicStarted = true;
+    
+    // Hide the hint with fade out
+    clickHint.classList.add('hide');
+    
+    // Remove from DOM after animation
+    setTimeout(() => {
+      clickHint.remove();
+    }, 500);
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════
